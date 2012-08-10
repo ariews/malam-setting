@@ -51,7 +51,7 @@ class Malam_Setting
         return $this->is_exists($name);
     }
 
-    public function set($name, $value, $overwrite = FALSE)
+    public function set($name, $value, $overwrite = TRUE)
     {
         if (NULL === $value)
         {
