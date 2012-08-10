@@ -53,6 +53,12 @@ class Malam_Setting
 
     public function set($name, $value, $overwrite = FALSE)
     {
+        if (NULL === $value)
+        {
+            $this->remove($name);
+            return $this;
+        }
+
         $is_exists = $this->is_exists($name);
 
         if (($is_exists && TRUE === $overwrite)
