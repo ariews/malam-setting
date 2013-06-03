@@ -30,7 +30,9 @@ class Malam_Setting
     }
 
     private function __construct()
-    {}
+    {
+        $this->cache = Cache::instance();
+    }
 
     public function __set($name, $value = NULL)
     {
