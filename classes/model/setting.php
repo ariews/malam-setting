@@ -6,6 +6,5 @@ defined('SYSPATH') or die('No direct script access.');
  * @author  arie
  */
 
-return array(
-    'table'     => 'settings',
-);
+class Model_Setting extends Malam_Model_Setting
+{}

@@ -10,16 +10,19 @@ class Malam_Setting
 {
     /**
      * Setting
+     *
      * @var Setting
      */
     private static $instance;
 
     /**
-     * Setting Table Name
-     * @var sting
+     * @var Cache
      */
-    protected $table;
+    protected $cache;
 
+    /**
+     * @return Setting
+     */
     public static function instance()
     {
         empty(self::$instance) && self::$instance = new self();
@@ -27,13 +30,11 @@ class Malam_Setting
     }
 
     private function __construct()
-    {
-        $this->table = Kohana::$config->load('setting.table');
-    }
+    {}
 
     public function __set($name, $value = NULL)
     {
-        return $this->set($name, $value);
+        $this->set($name, $value);
     }
 
     public function __get($name)
@@ -53,41 +54,17 @@ class Malam_Setting
 
     public function set($name, $value, $overwrite = TRUE)
     {
-        if (NULL === $value)
+        $data = array(
+            'name'      => $name,
+            'value'     => $value,
+        );
+
+        if (! $this->is_exists($name) || $overwrite)
         {
-            $this->remove($name);
-            return $this;
+            $this->Dco($name);
         }
 
-        $is_exists = $this->is_exists($name);
-
-        if (($is_exists && TRUE === $overwrite)
-                OR
-            (! $is_exists))
-        {
-            $value = (is_array($value) || is_object($value))
-                ? serialize($value) : $value;
-
-            $data = array(
-                'name'  => $name,
-                'value' => $value,
-            );
-
-            if ($is_exists)
-            {
-                DB::update($this->table)->set($data)
-                    ->where('name', '=', $name)->execute();
-            }
-
-            else
-            {
-                DB::insert($this->table, array_keys($data))
-                        ->values(array_values($data))
-                        ->execute();
-            }
-        }
-
-        return $this;
+        return ORM::factory('setting')->create_or_update($data, $overwrite);
     }
 
     public function sets($data, $overwrite = FALSE)
@@ -100,18 +77,12 @@ class Malam_Setting
         return $this;
     }
 
-    public function get($name, $default = NULL, $as_object = FALSE)
+    public function get($name, $default = NULL)
     {
         if ($this->is_exists($name))
         {
-            $s = DB::select()->from($this->table)->where('name', '=', $name)
-                    ->execute(NULL, TRUE)->current();
-
-            if (TRUE === $as_object)
-                return $s;
-
-            return (preg_match('!^(a|o):\d+:\{!i', $s->value))
-                    ? unserialize($s->value) : $s->value;
+            $c = $this->Gco($name);
+            return $c['object']->value;
         }
 
         return $default;
@@ -119,22 +90,61 @@ class Malam_Setting
 
     public function remove($name)
     {
-        try
+        if ($this->is_exists($name))
         {
-            DB::delete($this->table)
-                ->where('name', '=', $name)->execute();
-        }
-        catch (Exception $e)
-        {
-            return FALSE;
+            $c = $this->Gco($name);
+            $c['object']->delete();
+            return $this->Dco($name);
         }
 
-        return TRUE;
+        return FALSE;
     }
 
     public function is_exists($name)
     {
-        return (bool) DB::select()->from($this->table)
-                ->where('name', '=', $name)->execute()->count();
+        $result = $this->Gco($name);
+
+        if (NULL === $result)
+        {
+            $object = ORM::factory('setting')->find_by_name($name);
+            $result = array('object' => $object, 'exists' => $object->loaded());
+            $this->Sco($name, $result);
+        }
+
+        return $result['exists'];
+    }
+
+    /**
+     * Get Cache Object
+     *
+     * @param string $name
+     * @return array
+     */
+    protected function Gco($name)
+    {
+        return $this->cache->get("Setting:{$name}");
+    }
+
+    /**
+     * Save Cache Object
+     *
+     * @param string $name
+     * @param mix $value
+     * @return boolean
+     */
+    protected function Sco($name, $value)
+    {
+        return $this->cache->set("Setting:{$name}", $value);
+    }
+
+    /**
+     * Delete Cache Object
+     *
+     * @param string $name
+     * @return boolean
+     */
+    protected function Dco($name)
+    {
+        return $this->cache->delete("Setting:{$name}");
     }
 }
