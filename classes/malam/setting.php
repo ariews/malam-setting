@@ -29,7 +29,7 @@ class Malam_Setting
         return self::$instance;
     }
 
-    protected function __construct()
+    public function __construct()
     {
         $this->cache = Cache::instance();
     }
