@@ -13,7 +13,7 @@ class Malam_Setting
      *
      * @var Setting
      */
-    private static $instance;
+    protected static $instance;
 
     /**
      * @var Cache
@@ -29,7 +29,7 @@ class Malam_Setting
         return self::$instance;
     }
 
-    private function __construct()
+    protected function __construct()
     {
         $this->cache = Cache::instance();
     }
