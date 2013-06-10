@@ -84,18 +84,13 @@ class Malam_Model_Setting extends ORM
         return $this->where('name', '=', $name)->find();
     }
 
-    public function create_or_update($values, $overwrite = TRUE)
+    public function create_or_update($values)
     {
         $check = $this->find_by_name($values['name']);
 
         /* @var $check Model_Setting */
 
-        if (($check->loaded() && TRUE === $overwrite) || ! $check->loaded())
-        {
-            $check->values($values)->save();
-        }
-
-        return $check;
+        return $check->values($values)->save();
     }
 
     /**

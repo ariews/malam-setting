@@ -16,11 +16,6 @@ class Malam_Setting
     protected static $instance;
 
     /**
-     * @var Cache
-     */
-    protected $cache;
-
-    /**
      * @return Setting
      */
     public static function instance()
@@ -30,9 +25,7 @@ class Malam_Setting
     }
 
     public function __construct()
-    {
-        $this->cache = Cache::instance();
-    }
+    {}
 
     public function __set($name, $value = NULL)
     {
@@ -54,17 +47,12 @@ class Malam_Setting
         return $this->is_exists($name);
     }
 
-    public function set($name, $value, $overwrite = TRUE)
+    public function set($name, $value)
     {
         $data = array(
             'name'      => $name,
             'value'     => $value,
         );
-
-        if (! $this->is_exists($name) || $overwrite)
-        {
-            $this->Dco($name);
-        }
 
         return ORM::factory('setting')->create_or_update($data, $overwrite);
     }
@@ -83,8 +71,7 @@ class Malam_Setting
     {
         if ($this->is_exists($name))
         {
-            $c = $this->Gco($name);
-            return $c['object']->value;
+            return ORM::factory('setting')->find_by_name($name)->value;
         }
 
         return $default;
@@ -94,9 +81,7 @@ class Malam_Setting
     {
         if ($this->is_exists($name))
         {
-            $c = $this->Gco($name);
-            $c['object']->delete();
-            return $this->Dco($name);
+            return ORM::factory('setting')->find_by_name($name)->delete();
         }
 
         return FALSE;
@@ -104,49 +89,6 @@ class Malam_Setting
 
     public function is_exists($name)
     {
-        $result = $this->Gco($name);
-
-        if (NULL === $result)
-        {
-            $object = ORM::factory('setting')->find_by_name($name);
-            $result = array('object' => $object, 'exists' => $object->loaded());
-            $this->Sco($name, $result);
-        }
-
-        return $result['exists'];
-    }
-
-    /**
-     * Get Cache Object
-     *
-     * @param string $name
-     * @return array
-     */
-    protected function Gco($name)
-    {
-        return $this->cache->get("Setting:{$name}");
-    }
-
-    /**
-     * Save Cache Object
-     *
-     * @param string $name
-     * @param mix $value
-     * @return boolean
-     */
-    protected function Sco($name, $value)
-    {
-        return $this->cache->set("Setting:{$name}", $value);
-    }
-
-    /**
-     * Delete Cache Object
-     *
-     * @param string $name
-     * @return boolean
-     */
-    protected function Dco($name)
-    {
-        return $this->cache->delete("Setting:{$name}");
+        return ORM::factory('setting')->find_by_name($name)->loaded();
     }
 }
