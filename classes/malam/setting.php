@@ -54,7 +54,7 @@ class Malam_Setting
             'value'     => $value,
         );
 
-        return ORM::factory('setting')->create_or_update($data, $overwrite);
+        return ORM::factory('setting')->create_or_update($data);
     }
 
     public function sets($data, $overwrite = FALSE)
