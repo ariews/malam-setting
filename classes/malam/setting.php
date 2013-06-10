@@ -25,7 +25,7 @@ class Malam_Setting
      */
     public static function instance()
     {
-        empty(self::$instance) && self::$instance = new self();
+        empty(self::$instance) && self::$instance = new Setting;
         return self::$instance;
     }
 
