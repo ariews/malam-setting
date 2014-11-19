@@ -84,7 +84,7 @@ class Malam_Model_Setting extends ORM
         return $this->where('name', '=', $name)->find();
     }
 
-    public function create_or_update($values)
+    public function create_or_update(array $values)
     {
         $check = $this->find_by_name($values['name']);
 
